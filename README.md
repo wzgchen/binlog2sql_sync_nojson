@@ -9,7 +9,7 @@
 支持python2.7和python3  
 pip install PyMySQL==0.7.11  
 pip install mysql-replication==0.13  
-pip redis  
+
 
 
 限制：  
@@ -20,9 +20,9 @@ pip redis
 1.模拟从节点，用于进行数据迁移时进行增量数据同步  
 
 使用：  
-需要redis实时记录position位置，在脚本中修改redis ip:port  
+
 
 Sample :  
-   shell> python binlog2sql_sync_nojson_v1.py -f mysql-bin.000001 --start-position=2585 --outfile=/tmp/1.sql  --host=192.168.1.1 --user=admin --password=123456 --port=3306   
-   shell> python binlog2sql_sync_nojson_v1.py -f mysql-bin.000001 --start-position=2585 --outfile=/tmp/1.sql  --host=192.168.1.1 --user=admin --password=123456 --port=3306 --database=test  
-   shell> python binlog2sql_sync_nojson_v1.py -f mysql-bin.000001 --start-position=2585 --outfile=/tmp/1.sql  --host=192.168.1.1 --user=admin --password=123456 --port=3306 --database=test --table=t1  
+   shell> python binlog2sql_sync_nojson.py -f mysql-bin.000001 --start-position=2585 --outfile=/tmp/1.sql  --host=192.168.1.1 --user=admin --password=123456 --port=3306   
+   shell> python binlog2sql_sync_nojson.py -f mysql-bin.000001 --start-position=2585 --outfile=/tmp/1.sql  --host=192.168.1.1 --user=admin --password=123456 --port=3306 --database=test  
+   shell> python binlog2sql_sync_nojson.py -f mysql-bin.000001 --start-position=2585 --outfile=/tmp/1.sql  --host=192.168.1.1 --user=admin --password=123456 --port=3306 --database=test --table=t1  
