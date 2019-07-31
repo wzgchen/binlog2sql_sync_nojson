@@ -53,7 +53,7 @@ def fix_object(value):
     if isinstance(value, set):
         value = ','.join(value)
     if PY3PLUS and isinstance(value, bytes):
-        return value.decode('utf-8', "ignore")
+        return value.decode('utf-8')
     elif not PY3PLUS and isinstance(value, unicode):
         return value.encode('utf-8')
     else:
