@@ -43,9 +43,9 @@ def compare_items(items):
     # caution: if v is NULL, may need to process
     (k, v) = items
     if v is None:
-        return '`%s` IS %%s' % k
+        return '%s IS %%s' % k
     else:
-        return '`%s`=%%s' % k
+        return '%s=%%s' % k
 
 
 def fix_object(value):
@@ -191,7 +191,7 @@ class binlog2sql():
         self.user = parser['user']
         self.passwd = parser['password']
 
-    def db_save(self, sql_template, values, log_content, outfile):
+    def db_save(self, sql_template, values, outfile):
         db = pymysql.connect(host=self.host, user=self.user, password=self.passwd, database="mysql", port=self.port,
                              charset='utf8')
         cursor = db.cursor()
@@ -205,11 +205,6 @@ class binlog2sql():
         #
         # print('newlist:', newlist)
         newsql = cursor.mogrify(sql_template, newlist)
-        if not PY3PLUS:
-            log_content = log_content.encode("utf-8")
-            newsql += log_content
-        else:
-            newsql += log_content
 
         try:
             # cursor.execute(newsql)
@@ -257,15 +252,13 @@ class binlog2sql():
                     postion = stream.log_pos
                     log_timestamp = datetime.datetime.fromtimestamp(binlogevent.timestamp)
                     start = f.get()['log_pos']
-                    log_content = ' # binlog: %s start:%s end:%s time: %s' % (
-                        next_binlog, str(start), str(postion), log_timestamp)
 
-                    template = 'INSERT INTO `{0}`.`{1}`({2}) VALUES ({3});' \
+                    template = 'INSERT INTO {0}.{1}({2}) VALUES ({3});' \
                         .format(binlogevent.schema, binlogevent.table,
-                                ', '.join(map(lambda key: '`%s`' % key, row['values'].keys())),
+                                ', '.join(map(lambda key: '%s' % key, row['values'].keys())),
                                 ', '.join(['%s'] * len(row['values'])))
                     values = map(fix_object, row['values'].values())
-                    self.db_save(template, values, log_content, outfile)
+                    self.db_save(template, values, outfile)
 
                     dict_ = {'log_file': next_binlog, 'log_pos': postion}
                     f = file_position()
@@ -279,19 +272,17 @@ class binlog2sql():
                         postion = stream.log_pos
                         log_timestamp = datetime.datetime.fromtimestamp(binlogevent.timestamp)
                         start = f.get()['log_pos']
-                        log_content = ' # binlog: %s start:%s end:%s time: %s' % (
-                            next_binlog, str(start), str(postion), log_timestamp)
 
                         prikey = binlogevent.primary_key
                         beoreprikey_items = {k: v for k, v in row['values'].items() if k in prikey}.items()
                         beoreprikey_values = [v for k, v in beoreprikey_items]
 
-                        template = 'DELETE FROM `{0}`.`{1}` WHERE {2} LIMIT 1;'.format(binlogevent.schema,
+                        template = 'DELETE FROM {0}.{1} WHERE {2} LIMIT 1;'.format(binlogevent.schema,
                                                                                        binlogevent.table,
                                                                                        ' AND '.join(map(compare_items,
                                                                                                         beoreprikey_items)))
                         values = map(fix_object, beoreprikey_values)
-                        self.db_save(template, values, log_content, outfile)
+                        self.db_save(template, values, outfile)
 
                         dict_ = {'log_file': next_binlog, 'log_pos': postion}
                         f = file_position()
@@ -303,11 +294,9 @@ class binlog2sql():
                     postion = stream.log_pos
                     log_timestamp = datetime.datetime.fromtimestamp(binlogevent.timestamp)
                     start = f.get()['log_pos']
-                    log_content = ' # binlog: %s start:%s end:%s time: %s' % (
-                        next_binlog, str(start), str(postion), log_timestamp)
 
                     for row in binlogevent.rows:
-                        print('del_nopri_row:    ', binlogevent.schema, binlogevent.table, row, log_content)
+                        print('del_nopri_row:    ', binlogevent.schema, binlogevent.table, row)
 
                     dict_ = {'log_file': next_binlog, 'log_pos': postion}
                     f = file_position()
@@ -327,15 +316,13 @@ class binlog2sql():
                         postion = stream.log_pos
                         log_timestamp = datetime.datetime.fromtimestamp(binlogevent.timestamp)
                         start = f.get()['log_pos']
-                        log_content = ' # binlog: %s start:%s end:%s time: %s' % (
-                            next_binlog, str(start), str(postion), log_timestamp)
 
-                        template = 'UPDATE `{0}`.`{1}` SET {2} WHERE {3} LIMIT 1;'.format(binlogevent.schema,
+                        template = 'UPDATE {0}.{1} SET {2} WHERE {3} LIMIT 1;'.format(binlogevent.schema,
                                                                                           binlogevent.table, ', '.join(
-                                ['`%s`=%%s' % k for k in row['after_values'].keys()]), ' AND '.join(
+                                ['%s=%%s' % k for k in row['after_values'].keys()]), ' AND '.join(
                                 map(compare_items, beoreprikey_items)))
                         values = map(fix_object, list(row['after_values'].values()) + list(beoreprikey_values))
-                        self.db_save(template, values, log_content, outfile)
+                        self.db_save(template, values, outfile)
 
                         dict_ = {'log_file': next_binlog, 'log_pos': postion}
                         f = file_position()
@@ -347,11 +334,9 @@ class binlog2sql():
                     postion = stream.log_pos
                     log_timestamp = datetime.datetime.fromtimestamp(binlogevent.timestamp)
                     start = f.get()['log_pos']
-                    log_content = ' # binlog: %s start:%s end:%s time: %s' % (
-                    next_binlog, str(start), str(postion), log_timestamp)
 
                     for row in binlogevent.rows:
-                        print('update_nopri_row:    ', binlogevent.schema, binlogevent.table, row, log_content)
+                        rint('update_nopri_row:    ', binlogevent.schema, binlogevent.table, row)
 
                     dict_ = {'log_file': next_binlog, 'log_pos': postion}
                     f = file_position()
